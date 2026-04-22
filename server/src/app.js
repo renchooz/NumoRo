@@ -1,0 +1,50 @@
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import numerologyRoutes from "./routes/numerologyRoutes.js";
+import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
+
+dotenv.config({ path: ".env", override: true });
+
+const app = express();
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  process.env.CLIENT_URL
+].filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    // Allow non-browser clients (no Origin header)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(morgan("dev"));
+app.use(express.json());
+
+app.get("/api/v1/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.use("/api/v1/numerology", numerologyRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+export default app;
