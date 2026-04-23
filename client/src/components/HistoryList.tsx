@@ -20,9 +20,9 @@ const HistoryList = ({ history }: HistoryListProps) => {
           >
             <p className="font-medium text-slate-700 dark:text-slate-100">{item.fullName}</p>
             <p className="text-xs text-slate-500 dark:text-slate-300">DOB: {item.dateOfBirth}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-300">Mobile: {item.mobileNumber}</p>
             <p className="text-xs text-violet-700 dark:text-violet-300">
-              LP {item.lifePathNumber} | EX {item.expressionNumber} | SU {item.soulUrgeNumber} | PR{" "}
-              {item.personalityNumber}
+              PM {item.pm} | CN {item.cn} | DN {item.dn}
             </p>
           </div>
         ))}

@@ -4,11 +4,10 @@ const numerologyHistorySchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true },
     dateOfBirth: { type: String, required: true },
-    gender: { type: String, default: "" },
-    lifePathNumber: { type: Number, required: true },
-    expressionNumber: { type: Number, required: true },
-    soulUrgeNumber: { type: Number, required: true },
-    personalityNumber: { type: Number, required: true }
+    mobileNumber: { type: String, required: true },
+    pm: { type: Number, required: true },
+    cn: { type: Number, required: true },
+    dn: { type: Number, required: true }
   },
   { timestamps: true }
 );

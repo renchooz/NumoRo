@@ -1,31 +1,27 @@
 import NumerologyHistory from "../models/NumerologyHistory.js";
 import { NUMBER_MEANINGS } from "../data/meanings.js";
 import {
-  getExpressionNumber,
-  getLifePathNumber,
-  getPersonalityNumber,
-  getSoulUrgeNumber
+  getCompoundNumberFromDob,
+  getDestinyNumberFromCompound,
+  getPersonalityNumberFromDob
 } from "../utils/numerology.js";
 
-export const calculateNumerology = async ({ fullName, dateOfBirth, gender, saveHistory = true }) => {
-  const lifePathNumber = getLifePathNumber(dateOfBirth);
-  const expressionNumber = getExpressionNumber(fullName);
-  const soulUrgeNumber = getSoulUrgeNumber(fullName);
-  const personalityNumber = getPersonalityNumber(fullName);
+export const calculateNumerology = async ({ fullName, dateOfBirth, mobileNumber, saveHistory = true }) => {
+  const pm = getPersonalityNumberFromDob(dateOfBirth);
+  const cn = getCompoundNumberFromDob(dateOfBirth);
+  const dn = getDestinyNumberFromCompound(cn);
 
   const payload = {
     fullName,
     dateOfBirth,
-    gender: gender || "",
-    lifePathNumber,
-    expressionNumber,
-    soulUrgeNumber,
-    personalityNumber,
+    mobileNumber,
+    pm,
+    cn,
+    dn,
     meanings: {
-      lifePath: NUMBER_MEANINGS[lifePathNumber],
-      expression: NUMBER_MEANINGS[expressionNumber],
-      soulUrge: NUMBER_MEANINGS[soulUrgeNumber],
-      personality: NUMBER_MEANINGS[personalityNumber]
+      pm: NUMBER_MEANINGS[pm] || "Personality reveals your basic nature and personal style.",
+      cn: "Compound Number reflects the full vibration of your birth date before final reduction.",
+      dn: NUMBER_MEANINGS[dn] || "Destiny Number points to your life direction and purpose."
     }
   };
 

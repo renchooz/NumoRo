@@ -1,28 +1,24 @@
-export type GenderOption = "male" | "female" | "non-binary" | "prefer_not_to_say" | "";
-
 export interface NumerologyRequest {
   fullName: string;
   dateOfBirth: string;
-  gender?: GenderOption;
+  mobileNumber: string;
   saveHistory?: boolean;
 }
 
 export interface NumberMeanings {
-  lifePath: string;
-  expression: string;
-  soulUrge: string;
-  personality: string;
+  pm: string;
+  cn: string;
+  dn: string;
 }
 
 export interface NumerologyResponse {
   _id?: string;
   fullName: string;
   dateOfBirth: string;
-  gender?: string;
-  lifePathNumber: number;
-  expressionNumber: number;
-  soulUrgeNumber: number;
-  personalityNumber: number;
+  mobileNumber: string;
+  pm: number;
+  cn: number;
+  dn: number;
   meanings: NumberMeanings;
   createdAt?: string;
 }

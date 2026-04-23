@@ -58,6 +58,7 @@ const ResultsPage = () => {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-slate-600 dark:text-slate-300">Date of Birth: {result.dateOfBirth}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">Mobile Number: {result.mobileNumber}</p>
               <p className="text-sm text-slate-600 dark:text-slate-300">
                 Vibe: Joyful • Intuitive • Powerful 💫
               </p>
@@ -80,10 +81,9 @@ const ResultsPage = () => {
 
           <ResultsCards
             numbers={{
-              lifePathNumber: result.lifePathNumber,
-              expressionNumber: result.expressionNumber,
-              soulUrgeNumber: result.soulUrgeNumber,
-              personalityNumber: result.personalityNumber
+              pm: result.pm,
+              cn: result.cn,
+              dn: result.dn
             }}
             meanings={result.meanings}
           />

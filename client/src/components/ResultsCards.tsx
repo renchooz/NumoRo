@@ -3,24 +3,22 @@ import type { NumberMeanings } from "../types/numerology";
 
 interface ResultsCardsProps {
   numbers: {
-    lifePathNumber: number;
-    expressionNumber: number;
-    soulUrgeNumber: number;
-    personalityNumber: number;
+    pm: number;
+    cn: number;
+    dn: number;
   };
   meanings: NumberMeanings;
 }
 
 const cards = [
-  { key: "lifePathNumber", title: "Life Path", meaningKey: "lifePath" },
-  { key: "expressionNumber", title: "Expression / Destiny", meaningKey: "expression" },
-  { key: "soulUrgeNumber", title: "Soul Urge", meaningKey: "soulUrge" },
-  { key: "personalityNumber", title: "Personality", meaningKey: "personality" }
+  { key: "pm", title: "Personality Number (PM)", meaningKey: "pm" },
+  { key: "cn", title: "Compound Number (CN)", meaningKey: "cn" },
+  { key: "dn", title: "Destiny Number (DN)", meaningKey: "dn" }
 ] as const;
 
 const ResultsCards = ({ numbers, meanings }: ResultsCardsProps) => {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-3">
       {cards.map((card, idx) => (
         <motion.article
           key={card.key}

@@ -15,3 +15,32 @@ body,
 body {
   margin: 0;
 }
+
+.react-datepicker {
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;
+  overflow: hidden;
+}
+
+.react-datepicker__header {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6) !important;
+  border-bottom: none !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.react-datepicker__day-name {
+  color: #fdf4ff !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6) !important;
+  border-radius: 0.6rem !important;
+}

@@ -3,10 +3,9 @@ import type { NumerologyResponse } from "../types/numerology";
 export const shareResult = async (result: NumerologyResponse) => {
   const text = [
     `Numerology for ${result.fullName}`,
-    `Life Path: ${result.lifePathNumber}`,
-    `Expression: ${result.expressionNumber}`,
-    `Soul Urge: ${result.soulUrgeNumber}`,
-    `Personality: ${result.personalityNumber}`
+    `Personality Number (PM): ${result.pm}`,
+    `Compound Number (CN): ${result.cn}`,
+    `Destiny Number (DN): ${result.dn}`
   ].join("\n");
 
   if (navigator.share) {

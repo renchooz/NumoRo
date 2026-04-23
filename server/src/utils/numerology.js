@@ -1,8 +1,5 @@
-const MASTER_NUMBERS = new Set([11, 22, 33]);
-const VOWELS = new Set(["A", "E", "I", "O", "U"]);
-
-const reduceNumber = (num) => {
-  if (num <= 9 || MASTER_NUMBERS.has(num)) {
+const reduceToSingleDigit = (num) => {
+  if (num <= 9) {
     return num;
   }
 
@@ -11,60 +8,33 @@ const reduceNumber = (num) => {
     .split("")
     .reduce((acc, digit) => acc + Number(digit), 0);
 
-  return reduceNumber(sum);
+  return reduceToSingleDigit(sum);
 };
 
-const getAlphabetValue = (char) => {
-  const normalized = char.toUpperCase();
-  const code = normalized.charCodeAt(0);
-  if (code < 65 || code > 90) {
-    return 0;
-  }
-
-  return ((code - 65) % 9) + 1;
+const parseDob = (dateOfBirth) => {
+  const [day, month, year] = dateOfBirth.split("-").map((part) => Number(part));
+  return { day, month, year };
 };
 
-const getLifePathNumber = (dob) => {
-  const digits = dob.replace(/\D/g, "").split("");
-  const total = digits.reduce((sum, digit) => sum + Number(digit), 0);
-  return reduceNumber(total);
+const getPersonalityNumberFromDob = (dateOfBirth) => {
+  const { day } = parseDob(dateOfBirth);
+  return reduceToSingleDigit(day);
 };
 
-const getExpressionNumber = (name) => {
-  const total = name
-    .replace(/[^a-z]/gi, "")
+const getCompoundNumberFromDob = (dateOfBirth) => {
+  return dateOfBirth
+    .replace(/\D/g, "")
     .split("")
-    .reduce((sum, char) => sum + getAlphabetValue(char), 0);
-
-  return reduceNumber(total);
+    .reduce((sum, digit) => sum + Number(digit), 0);
 };
 
-const getSoulUrgeNumber = (name) => {
-  const total = name
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .split("")
-    .filter((char) => VOWELS.has(char))
-    .reduce((sum, char) => sum + getAlphabetValue(char), 0);
-
-  return reduceNumber(total || 1);
-};
-
-const getPersonalityNumber = (name) => {
-  const total = name
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .split("")
-    .filter((char) => !VOWELS.has(char))
-    .reduce((sum, char) => sum + getAlphabetValue(char), 0);
-
-  return reduceNumber(total || 1);
+const getDestinyNumberFromCompound = (compoundNumber) => {
+  return reduceToSingleDigit(compoundNumber);
 };
 
 export {
-  getLifePathNumber,
-  getExpressionNumber,
-  getSoulUrgeNumber,
-  getPersonalityNumber,
-  reduceNumber
+  reduceToSingleDigit,
+  getPersonalityNumberFromDob,
+  getCompoundNumberFromDob,
+  getDestinyNumberFromCompound
 };

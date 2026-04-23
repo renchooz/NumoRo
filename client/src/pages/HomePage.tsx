@@ -1,27 +1,47 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import DatePicker from "react-datepicker";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 import HistoryList from "../components/HistoryList";
 import LoadingOrb from "../components/LoadingOrb";
 import { useTheme } from "../hooks/useTheme";
-import { genderOptions } from "../constants/genderOptions";
 import { calculateNumerology, fetchHistory } from "../services/api";
-import type { GenderOption, NumerologyResponse } from "../types/numerology";
+import type { NumerologyResponse } from "../types/numerology";
+import "react-datepicker/dist/react-datepicker.css";
+
+const DOB_REGEX = /^\d{2}-\d{2}-\d{4}$/;
+
+const isValidDob = (value: string) => {
+  if (!DOB_REGEX.test(value)) {
+    return false;
+  }
+
+  const [day, month, year] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+};
+
+const formatDob = (value: Date) => format(value, "dd-MM-yyyy");
 
 const HomePage = () => {
   const { isDark, setIsDark } = useTheme();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [gender, setGender] = useState<GenderOption>("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [mobileNumber, setMobileNumber] = useState("");
   const [history, setHistory] = useState<NumerologyResponse[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const disabled = useMemo(
-    () => !fullName.trim() || !dateOfBirth || isLoading,
-    [fullName, dateOfBirth, isLoading]
+    () => !fullName.trim() || !dateOfBirth || !mobileNumber.trim() || isLoading,
+    [fullName, dateOfBirth, mobileNumber, isLoading]
   );
 
   useEffect(() => {
@@ -33,13 +53,26 @@ const HomePage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    const formattedDob = dateOfBirth ? formatDob(dateOfBirth) : "";
+
+    if (!isValidDob(formattedDob)) {
+      setError("Please enter a valid date in DD-MM-YYYY format.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(mobileNumber.trim())) {
+      setError("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const payload = await calculateNumerology({
         fullName: fullName.trim(),
-        dateOfBirth,
-        gender: gender || undefined,
+        dateOfBirth: formattedDob,
+        mobileNumber: mobileNumber.trim(),
         saveHistory: true
       });
       sessionStorage.setItem("numo-result", JSON.stringify(payload));
@@ -93,29 +126,32 @@ const HomePage = () => {
 
             <label className="flex flex-col gap-2">
               <span className="text-sm font-medium">Date of Birth 🎂</span>
-              <input
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                className="rounded-xl border border-cyan-200 bg-white/80 p-3 outline-none ring-cyan-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
+              <DatePicker
+                selected={dateOfBirth}
+                onChange={(date: Date | null) => setDateOfBirth(date)}
+                dateFormat="dd-MM-yyyy"
+                placeholderText="Select DOB from calendar"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                maxDate={new Date()}
+                className="w-full rounded-xl border border-cyan-200 bg-white/80 p-3 outline-none ring-cyan-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
+                wrapperClassName="w-full"
                 required
               />
             </label>
 
-            <label className="flex flex-col gap-2 md:col-span-2">
-              <span className="text-sm font-medium">Gender (optional) 🌸</span>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value as GenderOption)}
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Mobile Number 📱</span>
+              <input
+                type="tel"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
                 className="rounded-xl border border-violet-200 bg-white/80 p-3 outline-none ring-violet-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
-              >
-                <option value="">Select a gender</option>
-                {genderOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                placeholder="10-digit mobile number"
+                pattern="\d{10}"
+                required
+              />
             </label>
 
             <button
