@@ -32,7 +32,9 @@ const formatDob = (value: Date) => format(value, "dd-MM-yyyy");
 const HomePage = () => {
   const { isDark, setIsDark } = useTheme();
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [mobileNumber, setMobileNumber] = useState("");
   const [history, setHistory] = useState<NumerologyResponse[]>([]);
@@ -40,8 +42,8 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const disabled = useMemo(
-    () => !fullName.trim() || !dateOfBirth || !mobileNumber.trim() || isLoading,
-    [fullName, dateOfBirth, mobileNumber, isLoading]
+    () => !firstName.trim() || !dateOfBirth || !mobileNumber.trim() || isLoading,
+    [firstName, dateOfBirth, mobileNumber, isLoading]
   );
 
   useEffect(() => {
@@ -55,6 +57,11 @@ const HomePage = () => {
     setError("");
 
     const formattedDob = dateOfBirth ? formatDob(dateOfBirth) : "";
+
+    if (!firstName.trim()) {
+      setError("First name is required.");
+      return;
+    }
 
     if (!isValidDob(formattedDob)) {
       setError("Please enter a valid date in DD-MM-YYYY format.");
@@ -70,7 +77,9 @@ const HomePage = () => {
 
     try {
       const payload = await calculateNumerology({
-        fullName: fullName.trim(),
+        firstName: firstName.trim(),
+        middleName: middleName.trim() || undefined,
+        lastName: lastName.trim() || undefined,
         dateOfBirth: formattedDob,
         mobileNumber: mobileNumber.trim(),
         saveHistory: true
@@ -86,7 +95,7 @@ const HomePage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-cyan-100 px-4 py-8 text-slate-900 dark:from-slate-950 dark:via-purple-950 dark:to-slate-900 dark:text-slate-100">
+    <main className="min-h-screen bg-white bg-gradient-to-br from-yellow-100 via-pink-100 to-cyan-100 px-4 py-8 text-black dark:bg-gray-900 dark:from-slate-950 dark:via-purple-950 dark:to-slate-900 dark:text-white">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -113,14 +122,34 @@ const HomePage = () => {
 
           <form onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium">Full Name 😀</span>
+              <span className="text-sm font-medium">First Name 😀</span>
               <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 className="rounded-xl border border-pink-200 bg-white/80 p-3 outline-none ring-pink-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
-                placeholder="John Doe"
+                placeholder="First name"
                 required
-                minLength={2}
+                minLength={1}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Middle Name (optional) 🌼</span>
+              <input
+                value={middleName}
+                onChange={(e) => setMiddleName(e.target.value)}
+                className="rounded-xl border border-amber-200 bg-white/80 p-3 outline-none ring-amber-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
+                placeholder="Middle name"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Last Name (optional) 🌟</span>
+              <input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="rounded-xl border border-lime-200 bg-white/80 p-3 outline-none ring-lime-300 focus:ring dark:border-white/10 dark:bg-slate-800/70"
+                placeholder="Last name"
               />
             </label>
 

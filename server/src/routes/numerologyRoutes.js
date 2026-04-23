@@ -22,10 +22,20 @@ const isValidDob = (value) => {
 router.post(
   "/calculate",
   [
-    body("fullName")
+    body("firstName")
       .trim()
-      .isLength({ min: 2, max: 80 })
-      .withMessage("Full name must be between 2 and 80 characters."),
+      .isLength({ min: 1, max: 40 })
+      .withMessage("First name is required."),
+    body("middleName")
+      .optional({ values: "falsy" })
+      .trim()
+      .isLength({ max: 40 })
+      .withMessage("Middle name must be up to 40 characters."),
+    body("lastName")
+      .optional({ values: "falsy" })
+      .trim()
+      .isLength({ max: 40 })
+      .withMessage("Last name must be up to 40 characters."),
     body("dateOfBirth")
       .trim()
       .custom((value) => isValidDob(value))

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const THEME_KEY = "numo-theme";
+const THEME_KEY = "theme";
 
 export const useTheme = () => {
   const [isDark, setIsDark] = useState(() => {

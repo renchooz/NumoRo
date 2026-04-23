@@ -5,7 +5,9 @@ export const shareResult = async (result: NumerologyResponse) => {
     `Numerology for ${result.fullName}`,
     `Personality Number (PM): ${result.pm}`,
     `Compound Number (CN): ${result.cn}`,
-    `Destiny Number (DN): ${result.dn}`
+    `Destiny Number (DN): ${result.dn}`,
+    `Name Compound Number (NCN): ${result.nameCompound}`,
+    `Final Name Number: ${result.nameFinal}`
   ].join("\n");
 
   if (navigator.share) {

@@ -1,27 +1,44 @@
 import NumerologyHistory from "../models/NumerologyHistory.js";
 import { NUMBER_MEANINGS } from "../data/meanings.js";
 import {
+  calculateNameNumerology,
   getCompoundNumberFromDob,
   getDestinyNumberFromCompound,
   getPersonalityNumberFromDob
 } from "../utils/numerology.js";
 
-export const calculateNumerology = async ({ fullName, dateOfBirth, mobileNumber, saveHistory = true }) => {
+export const calculateNumerology = async ({
+  firstName,
+  middleName,
+  lastName,
+  dateOfBirth,
+  mobileNumber,
+  saveHistory = true
+}) => {
+  const fullName = [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
   const pm = getPersonalityNumberFromDob(dateOfBirth);
   const cn = getCompoundNumberFromDob(dateOfBirth);
   const dn = getDestinyNumberFromCompound(cn);
+  const { nameCompound, nameFinal } = calculateNameNumerology(fullName);
 
   const payload = {
+    firstName,
+    middleName: middleName || "",
+    lastName: lastName || "",
     fullName,
     dateOfBirth,
     mobileNumber,
     pm,
     cn,
     dn,
+    nameCompound,
+    nameFinal,
     meanings: {
       pm: NUMBER_MEANINGS[pm] || "Personality reveals your basic nature and personal style.",
       cn: "Compound Number reflects the full vibration of your birth date before final reduction.",
-      dn: NUMBER_MEANINGS[dn] || "Destiny Number points to your life direction and purpose."
+      dn: NUMBER_MEANINGS[dn] || "Destiny Number points to your life direction and purpose.",
+      nameCompound: "Name Compound Number is the raw total vibration of your complete name.",
+      nameFinal: NUMBER_MEANINGS[nameFinal] || "Final Name Number shows your core name vibration."
     }
   };
 

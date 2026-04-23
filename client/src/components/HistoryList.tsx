@@ -24,6 +24,9 @@ const HistoryList = ({ history }: HistoryListProps) => {
             <p className="text-xs text-violet-700 dark:text-violet-300">
               PM {item.pm} | CN {item.cn} | DN {item.dn}
             </p>
+            <p className="text-xs text-fuchsia-700 dark:text-fuchsia-300">
+              NCN {item.nameCompound} | Name Final {item.nameFinal}
+            </p>
           </div>
         ))}
       </div>
