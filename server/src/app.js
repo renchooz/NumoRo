@@ -9,10 +9,17 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 dotenv.config({ path: ".env", override: true });
 
 const app = express();
+const normalizeOrigin = (value) => value?.trim().replace(/\/$/, "");
+const configuredOrigins = (process.env.CLIENT_URLS || "")
+  .split(",")
+  .map(normalizeOrigin)
+  .filter(Boolean);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  process.env.CLIENT_URL
+  "https://numoro-1.onrender.com",
+  normalizeOrigin(process.env.CLIENT_URL),
+  ...configuredOrigins
 ].filter(Boolean);
 
 const corsOptions = {
@@ -22,7 +29,9 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
 
