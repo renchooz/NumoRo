@@ -50,10 +50,23 @@ const calculateNameNumerology = (name) => {
   return { nameCompound: compound, nameFinal: final };
 };
 
+const calculateMobileNumerology = (number) => {
+  const digits = String(number)
+    .replace(/\D/g, "")
+    .split("")
+    .map((digit) => Number(digit));
+
+  const mobileCompound = digits.reduce((sum, digit) => sum + digit, 0);
+  const mobileFinal = reduceToSingleDigit(mobileCompound);
+
+  return { mobileCompound, mobileFinal };
+};
+
 export {
   reduceToSingleDigit,
   getPersonalityNumberFromDob,
   getCompoundNumberFromDob,
   getDestinyNumberFromCompound,
-  calculateNameNumerology
+  calculateNameNumerology,
+  calculateMobileNumerology
 };

@@ -120,6 +120,39 @@ const ResultsPage = () => {
               </motion.article>
             </div>
           </section>
+
+          <section className="mt-6">
+            <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
+              Mobile Numerology
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <motion.article
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.22 }}
+                className="rounded-2xl border border-white/40 bg-white/35 p-5 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40"
+              >
+                <p className="text-sm text-slate-500 dark:text-slate-300">Mobile Compound Number (MCN)</p>
+                <h3 className="mt-2 text-3xl font-semibold text-violet-700 dark:text-violet-300">
+                  {result.mobileCompound}
+                </h3>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{result.meanings.mobileCompound}</p>
+              </motion.article>
+
+              <motion.article
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.28 }}
+                className="rounded-2xl border border-white/40 bg-white/35 p-5 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40"
+              >
+                <p className="text-sm text-slate-500 dark:text-slate-300">Final Mobile Number</p>
+                <h3 className="mt-2 text-3xl font-semibold text-violet-700 dark:text-violet-300">
+                  {result.mobileFinal}
+                </h3>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{result.meanings.mobileFinal}</p>
+              </motion.article>
+            </div>
+          </section>
         </motion.section>
       </div>
     </main>

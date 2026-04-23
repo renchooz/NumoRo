@@ -1,14 +1,13 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
-import HistoryList from "../components/HistoryList";
 import LoadingOrb from "../components/LoadingOrb";
 import { useTheme } from "../hooks/useTheme";
-import { calculateNumerology, fetchHistory } from "../services/api";
-import type { NumerologyResponse } from "../types/numerology";
+import { calculateNumerology } from "../services/api";
+import { calculateMobileNumerology } from "../utils/numerology";
 import "react-datepicker/dist/react-datepicker.css";
 
 const DOB_REGEX = /^\d{2}-\d{2}-\d{4}$/;
@@ -37,7 +36,6 @@ const HomePage = () => {
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [mobileNumber, setMobileNumber] = useState("");
-  const [history, setHistory] = useState<NumerologyResponse[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,12 +43,6 @@ const HomePage = () => {
     () => !firstName.trim() || !dateOfBirth || !mobileNumber.trim() || isLoading,
     [firstName, dateOfBirth, mobileNumber, isLoading]
   );
-
-  useEffect(() => {
-    fetchHistory()
-      .then((items) => setHistory(items))
-      .catch(() => setHistory([]));
-  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -70,6 +62,12 @@ const HomePage = () => {
 
     if (!/^\d{10}$/.test(mobileNumber.trim())) {
       setError("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
+    const { mobileCompound, mobileFinal } = calculateMobileNumerology(mobileNumber.trim());
+    if (!Number.isFinite(mobileCompound) || !Number.isFinite(mobileFinal)) {
+      setError("Please enter a valid 10-digit mobile number.");
       return;
     }
 
@@ -101,7 +99,7 @@ const HomePage = () => {
           <div>
             <p className="text-xl">🌈✨💫🦋</p>
             <h1 className="text-4xl font-extrabold text-fuchsia-700 dark:text-fuchsia-300">
-              Numo Happy Numerology
+              Calculate Your Destiny
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-300">
               Cheerful insights for your life numbers 🎉
@@ -194,7 +192,6 @@ const HomePage = () => {
 
           {isLoading && <LoadingOrb />}
           {error && <p className="mt-4 text-sm text-rose-500">{error}</p>}
-          <HistoryList history={history} />
         </motion.section>
       </div>
     </main>

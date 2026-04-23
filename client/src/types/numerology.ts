@@ -13,6 +13,8 @@ export interface NumberMeanings {
   dn: string;
   nameCompound: string;
   nameFinal: string;
+  mobileCompound: string;
+  mobileFinal: string;
 }
 
 export interface NumerologyResponse {
@@ -28,6 +30,8 @@ export interface NumerologyResponse {
   dn: number;
   nameCompound: number;
   nameFinal: number;
+  mobileCompound: number;
+  mobileFinal: number;
   meanings: NumberMeanings;
   createdAt?: string;
 }

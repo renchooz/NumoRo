@@ -12,7 +12,9 @@ const numerologyHistorySchema = new mongoose.Schema(
     cn: { type: Number, required: true },
     dn: { type: Number, required: true },
     nameCompound: { type: Number, required: true },
-    nameFinal: { type: Number, required: true }
+    nameFinal: { type: Number, required: true },
+    mobileCompound: { type: Number, required: true },
+    mobileFinal: { type: Number, required: true }
   },
   { timestamps: true }
 );
