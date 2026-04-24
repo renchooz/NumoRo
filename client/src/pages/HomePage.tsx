@@ -4,10 +4,11 @@ import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
-import LoadingOrb from "../components/LoadingOrb";
 import { useTheme } from "../hooks/useTheme";
 import { calculateNumerology } from "../services/api";
 import { calculateMobileNumerology } from "../utils/numerology";
+import { useDob } from "../state/DobContext";
+import { useLoader } from "../state/LoaderContext";
 import "react-datepicker/dist/react-datepicker.css";
 
 const DOB_REGEX = /^\d{2}-\d{2}-\d{4}$/;
@@ -31,6 +32,8 @@ const formatDob = (value: Date) => format(value, "dd-MM-yyyy");
 const HomePage = () => {
   const { isDark, setIsDark } = useTheme();
   const navigate = useNavigate();
+  const { setDob } = useDob();
+  const loader = useLoader();
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -72,6 +75,7 @@ const HomePage = () => {
     }
 
     setIsLoading(true);
+    loader.show();
 
     try {
       const payload = await calculateNumerology({
@@ -83,12 +87,14 @@ const HomePage = () => {
         saveHistory: true
       });
       sessionStorage.setItem("numo-result", JSON.stringify(payload));
+      setDob(formattedDob);
       navigate("/result", { state: { result: payload } });
     } catch (err) {
       setError("Unable to calculate numerology right now. Please verify your input and try again.");
       console.error(err);
     } finally {
       setIsLoading(false);
+      loader.hide();
     }
   };
 
@@ -190,7 +196,6 @@ const HomePage = () => {
             </button>
           </form>
 
-          {isLoading && <LoadingOrb />}
           {error && <p className="mt-4 text-sm text-rose-500">{error}</p>}
         </motion.section>
       </div>

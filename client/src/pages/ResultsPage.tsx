@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ResultsCards from "../components/ResultsCards";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../hooks/useTheme";
+import { useDob } from "../state/DobContext";
+import { useLoader } from "../state/LoaderContext";
 import { shareResult } from "../utils/share";
 import type { NumerologyResponse } from "../types/numerology";
 
@@ -15,6 +17,9 @@ const ResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDark, setIsDark } = useTheme();
+  const { setDob } = useDob();
+  const loader = useLoader();
+  const [showKnowMore, setShowKnowMore] = useState(false);
 
   const result = useMemo(() => {
     const fromState = (location.state as LocationState | null)?.result;
@@ -31,6 +36,12 @@ const ResultsPage = () => {
       navigate("/", { replace: true });
     }
   }, [navigate, result]);
+
+  useEffect(() => {
+    if (result?.dateOfBirth) {
+      setDob(result.dateOfBirth);
+    }
+  }, [result?.dateOfBirth, setDob]);
 
   if (!result) {
     return null;
@@ -87,6 +98,90 @@ const ResultsPage = () => {
             }}
             meanings={result.meanings}
           />
+
+          <section className="mt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                  Know More
+                </h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Explore advanced DOB grids with a premium astrology-like view.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowKnowMore((v) => !v)}
+                className="rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-[1.01]"
+              >
+                Know More About Your DOB
+              </button>
+            </div>
+
+            {showKnowMore ? (
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => {
+                    loader.show();
+                    setDob(result.dateOfBirth);
+                    navigate("/pythagoras-grid");
+                  }}
+                  className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"
+                >
+                  <p className="text-sm text-slate-500 dark:text-slate-300">Option 1</p>
+                  <h4 className="mt-1 text-xl font-extrabold text-indigo-700 dark:text-indigo-300">
+                    Pythagoras Grid
+                  </h4>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                    Classic 1–9 matrix with repeats highlighted.
+                  </p>
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => {
+                    loader.show();
+                    setDob(result.dateOfBirth);
+                    navigate("/loshu-grid");
+                  }}
+                  className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"
+                >
+                  <p className="text-sm text-slate-500 dark:text-slate-300">Option 2</p>
+                  <h4 className="mt-1 text-xl font-extrabold text-emerald-700 dark:text-emerald-300">
+                    Lo Shu Grid
+                  </h4>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                    Traditional Lo Shu layout: 4-9-2 / 3-5-7 / 8-1-6.
+                  </p>
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => {
+                    loader.show();
+                    setDob(result.dateOfBirth);
+                    navigate("/vedic-grid");
+                  }}
+                  className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"
+                >
+                  <p className="text-sm text-slate-500 dark:text-slate-300">Option 3</p>
+                  <h4 className="mt-1 text-xl font-extrabold text-fuchsia-700 dark:text-fuchsia-300">
+                    Vedic Grid
+                  </h4>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                    Presence/absence focused view in a modern grid.
+                  </p>
+                </motion.button>
+              </div>
+            ) : null}
+          </section>
 
           <section className="mt-6">
             <h3 className="mb-3 text-lg font-semibold text-slate-800 dark:text-slate-100">
