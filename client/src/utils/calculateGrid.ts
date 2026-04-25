@@ -17,7 +17,7 @@ export type CalculatedGrid = {
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
-export function getDobDigits(dob: string) {
+export function getDigitFrequency(dob: string) {
   const digits = (dob.match(/\d/g) ?? [])
     .map((d) => Number(d))
     .filter((d) => Number.isInteger(d) && d >= 1 && d <= 9) as Array<
@@ -39,18 +39,31 @@ export function getDobDigits(dob: string) {
   return { frequency, present: [...present], missing: [...missing] };
 }
 
+// Layouts are listed left-to-right, top-to-bottom for a 3×3 grid.
 const LOSHU_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [4, 9, 2, 3, 5, 7, 8, 1, 6];
-const PYTHAGORAS_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+// Pythagoras (requested):
+// 3 6 9
+// 2 5 8
+// 1 4 7
+const PYTHAGORAS_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [3, 6, 9, 2, 5, 8, 1, 4, 7];
+
+// Vedic (requested):
+// 3 1 9
+// 6 7 5
+// 2 3 4
+// Note: This layout intentionally follows the provided sequence even though it repeats 3 and omits 8.
+const VEDIC_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [3, 1, 9, 6, 7, 5, 2, 3, 4];
 
 export function calculateGrid(dob: string, kind: GridKind): CalculatedGrid {
-  const { frequency, present, missing } = getDobDigits(dob);
+  const { frequency, present, missing } = getDigitFrequency(dob);
 
   const layout =
     kind === "loshu"
       ? LOSHU_LAYOUT
       : kind === "pythagoras"
         ? PYTHAGORAS_LAYOUT
-        : PYTHAGORAS_LAYOUT;
+        : VEDIC_LAYOUT;
 
   const cells = layout.map((n) => ({ n, count: frequency[n] }));
 

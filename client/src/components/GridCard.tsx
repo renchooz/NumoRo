@@ -58,7 +58,9 @@ export default function GridCard({ title, subtitle, grid, accent = "indigo" }: G
               className={clsx(
                 "relative flex h-24 items-center justify-center overflow-hidden rounded-2xl border shadow-glass",
                 "bg-white/40 backdrop-blur-xl dark:bg-slate-950/30",
-                isPresent ? "border-white/50 dark:border-white/15" : "border-white/20 dark:border-white/10"
+                isPresent
+                  ? "border-white/50 dark:border-white/15"
+                  : "border-dashed border-white/30 opacity-70 dark:border-white/10 dark:opacity-60"
               )}
             >
               {isPresent ? (
@@ -87,17 +89,21 @@ export default function GridCard({ title, subtitle, grid, accent = "indigo" }: G
                 <p
                   className={clsx(
                     "text-3xl font-extrabold tracking-tight",
-                    isPresent ? "text-white drop-shadow-[0_0_14px_rgba(255,255,255,.5)]" : "text-slate-400 dark:text-slate-500"
+                    isPresent
+                      ? "text-white drop-shadow-[0_0_14px_rgba(255,255,255,.5)]"
+                      : "text-slate-400 dark:text-slate-500"
                   )}
                 >
-                  {isPresent ? formatCellValue(cell.n, cell.count) : cell.n}
+                  {isPresent ? formatCellValue(cell.n, cell.count) : "-"}
                 </p>
                 {isPresent ? (
                   <p className={clsx("mt-1 text-xs text-white/75", isRepeat && "font-semibold")}>
                     {isRepeat ? `repeat ×${cell.count}` : "present"}
                   </p>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">missing</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+                    missing {cell.n}
+                  </p>
                 )}
               </div>
             </motion.div>
