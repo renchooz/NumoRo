@@ -17,7 +17,7 @@ const ResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDark, setIsDark } = useTheme();
-  const { setDob } = useDob();
+  const { setNumerology } = useDob();
   const loader = useLoader();
   const [showKnowMore, setShowKnowMore] = useState(false);
 
@@ -38,10 +38,10 @@ const ResultsPage = () => {
   }, [navigate, result]);
 
   useEffect(() => {
-    if (result?.dateOfBirth) {
-      setDob(result.dateOfBirth);
+    if (result?.dateOfBirth && typeof result.pm === "number" && typeof result.dn === "number") {
+      setNumerology({ dob: result.dateOfBirth, pm: result.pm, dn: result.dn });
     }
-  }, [result?.dateOfBirth, setDob]);
+  }, [result?.dateOfBirth, result?.dn, result?.pm, setNumerology]);
 
   if (!result) {
     return null;
@@ -126,7 +126,7 @@ const ResultsPage = () => {
                   whileTap={{ scale: 0.99 }}
                   onClick={() => {
                     loader.show();
-                    setDob(result.dateOfBirth);
+                    setNumerology({ dob: result.dateOfBirth, pm: result.pm, dn: result.dn });
                     navigate("/pythagoras-grid");
                   }}
                   className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"
@@ -146,7 +146,7 @@ const ResultsPage = () => {
                   whileTap={{ scale: 0.99 }}
                   onClick={() => {
                     loader.show();
-                    setDob(result.dateOfBirth);
+                    setNumerology({ dob: result.dateOfBirth, pm: result.pm, dn: result.dn });
                     navigate("/loshu-grid");
                   }}
                   className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"
@@ -166,7 +166,7 @@ const ResultsPage = () => {
                   whileTap={{ scale: 0.99 }}
                   onClick={() => {
                     loader.show();
-                    setDob(result.dateOfBirth);
+                    setNumerology({ dob: result.dateOfBirth, pm: result.pm, dn: result.dn });
                     navigate("/vedic-grid");
                   }}
                   className="group rounded-2xl border border-white/40 bg-white/35 p-5 text-left shadow-glass backdrop-blur-xl transition dark:border-white/10 dark:bg-slate-900/40"

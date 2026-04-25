@@ -10,7 +10,7 @@ import { calculateGrid } from "../utils/calculateGrid";
 
 export default function VedicGridPage() {
   const { isDark, setIsDark } = useTheme();
-  const { dob } = useDob();
+  const { dob, pm, dn } = useDob();
   const loader = useLoader();
 
   useEffect(() => {
@@ -20,9 +20,12 @@ export default function VedicGridPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grid = useMemo(() => (dob ? calculateGrid(dob, "vedic") : null), [dob]);
+  const grid = useMemo(
+    () => (dob && pm != null && dn != null ? calculateGrid(dob, "vedic", pm, dn) : null),
+    [dob, dn, pm]
+  );
 
-  if (!dob || !grid) {
+  if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
   }
 

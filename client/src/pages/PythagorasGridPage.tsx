@@ -10,7 +10,7 @@ import { useEffect, useMemo } from "react";
 
 export default function PythagorasGridPage() {
   const { isDark, setIsDark } = useTheme();
-  const { dob } = useDob();
+  const { dob, pm, dn } = useDob();
   const loader = useLoader();
 
   useEffect(() => {
@@ -20,9 +20,12 @@ export default function PythagorasGridPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grid = useMemo(() => (dob ? calculateGrid(dob, "pythagoras") : null), [dob]);
+  const grid = useMemo(
+    () => (dob && pm != null && dn != null ? calculateGrid(dob, "pythagoras", pm, dn) : null),
+    [dob, dn, pm]
+  );
 
-  if (!dob || !grid) {
+  if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
   }
 

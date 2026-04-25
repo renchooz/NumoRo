@@ -10,7 +10,7 @@ import { calculateGrid } from "../utils/calculateGrid";
 
 export default function LoshuGridPage() {
   const { isDark, setIsDark } = useTheme();
-  const { dob } = useDob();
+  const { dob, pm, dn } = useDob();
   const loader = useLoader();
 
   useEffect(() => {
@@ -20,9 +20,12 @@ export default function LoshuGridPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grid = useMemo(() => (dob ? calculateGrid(dob, "loshu") : null), [dob]);
+  const grid = useMemo(
+    () => (dob && pm != null && dn != null ? calculateGrid(dob, "loshu", pm, dn) : null),
+    [dob, dn, pm]
+  );
 
-  if (!dob || !grid) {
+  if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
   }
 

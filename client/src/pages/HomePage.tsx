@@ -32,7 +32,7 @@ const formatDob = (value: Date) => format(value, "dd-MM-yyyy");
 const HomePage = () => {
   const { isDark, setIsDark } = useTheme();
   const navigate = useNavigate();
-  const { setDob } = useDob();
+  const { setNumerology } = useDob();
   const loader = useLoader();
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -87,7 +87,7 @@ const HomePage = () => {
         saveHistory: true
       });
       sessionStorage.setItem("numo-result", JSON.stringify(payload));
-      setDob(formattedDob);
+      setNumerology({ dob: formattedDob, pm: payload.pm ?? null, dn: payload.dn ?? null });
       navigate("/result", { state: { result: payload } });
     } catch (err) {
       setError("Unable to calculate numerology right now. Please verify your input and try again.");

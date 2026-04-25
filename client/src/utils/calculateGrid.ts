@@ -17,25 +17,6 @@ export type CalculatedGrid = {
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
-export function getDigitFrequency(dob: string) {
-  const digits = (dob.match(/\d/g) ?? [])
-    .map((d) => Number(d))
-    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 9) as Array<
-    1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-  >;
-
-  const frequency = createEmptyFrequency();
-
-  for (const d of digits) {
-    frequency[d] += 1;
-  }
-
-  const present = DIGITS.filter((n) => frequency[n] > 0);
-  const missing = DIGITS.filter((n) => frequency[n] === 0);
-
-  return { frequency, present: [...present], missing: [...missing] };
-}
-
 function createEmptyFrequency(): DigitFrequency {
   return DIGITS.reduce((acc, n) => {
     acc[n] = 0;
@@ -66,18 +47,10 @@ function getVedicDobDigits(dob: string): number[] {
   return all;
 }
 
-export function getVedicDigitFrequency(dob: string) {
-  const digits = getVedicDobDigits(dob).filter((d) => d >= 1 && d <= 9) as Array<
-    1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-  >;
-
-  const frequency = createEmptyFrequency();
-  for (const d of digits) frequency[d] += 1;
-
-  const present = DIGITS.filter((n) => frequency[n] > 0);
-  const missing = DIGITS.filter((n) => frequency[n] === 0);
-
-  return { frequency, present: [...present], missing: [...missing] };
+function getFullDobDigits(dob: string): number[] {
+  return (dob.match(/\d/g) ?? [])
+    .map((d) => Number(d))
+    .filter((d) => Number.isInteger(d) && d >= 0 && d <= 9);
 }
 
 // Layouts are listed left-to-right, top-to-bottom for a 3×3 grid.
@@ -95,9 +68,40 @@ const PYTHAGORAS_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [3, 6, 9, 2,
 // 2 8 4
 const VEDIC_LAYOUT: Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9> = [3, 1, 9, 6, 7, 5, 2, 8, 4];
 
-export function calculateGrid(dob: string, kind: GridKind): CalculatedGrid {
-  const { frequency, present, missing } =
-    kind === "vedic" ? getVedicDigitFrequency(dob) : getDigitFrequency(dob);
+function toDigitList(value: number): number[] {
+  if (!Number.isFinite(value)) return [];
+  return String(Math.trunc(value))
+    .split("")
+    .map((c) => Number(c))
+    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 9);
+}
+
+function getDobDigitsByKind(dob: string, kind: GridKind): number[] {
+  if (kind === "vedic") {
+    return getVedicDobDigits(dob);
+  }
+  return getFullDobDigits(dob);
+}
+
+export function getDigitFrequency(dob: string, pm: number, dn: number, kind: GridKind) {
+  const dobDigits = getDobDigitsByKind(dob, kind).filter((d) => d >= 1 && d <= 9);
+  const injected = [...toDigitList(pm), ...toDigitList(dn)];
+  const digits = [...dobDigits, ...injected] as Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>;
+
+  const frequency = createEmptyFrequency();
+  for (const d of digits) frequency[d] += 1;
+
+  const present = DIGITS.filter((n) => frequency[n] > 0);
+  const missing = DIGITS.filter((n) => frequency[n] === 0);
+
+  return { frequency, present: [...present], missing: [...missing] };
+}
+
+export function calculateGrid(dob: string, kind: GridKind, pm: number, dn: number): CalculatedGrid | null {
+  if (!dob || pm == null || dn == null) return null;
+  if (!Number.isFinite(pm) || !Number.isFinite(dn)) return null;
+
+  const { frequency, present, missing } = getDigitFrequency(dob, pm, dn, kind);
 
   const layout =
     kind === "loshu"
