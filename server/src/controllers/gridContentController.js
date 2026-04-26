@@ -18,6 +18,15 @@ const ensureMinNumbers = (numbers, res) => {
   return true;
 };
 
+const normalizeNumbers = (values) => {
+  const parsed = (Array.isArray(values) ? values : [])
+    .map((n) => Number(n))
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 9);
+  const uniq = Array.from(new Set(parsed));
+  uniq.sort((a, b) => a - b);
+  return uniq;
+};
+
 export const createGridContent = async (req, res, next) => {
   try {
     ensureDb();
@@ -26,11 +35,33 @@ export const createGridContent = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid input" });
     }
     if (!ensureMinNumbers(numbers, res)) return;
+    if (!Array.isArray(numbers)) {
+      return res.status(400).json({ success: false, message: "numbers must be an array" });
+    }
+
+    // Normalize once and use consistently for query + save.
+    const normalizedNumbers = normalizeNumbers(numbers);
+    console.log("Incoming numbers:", numbers);
+    console.log("Normalized:", normalizedNumbers);
+    const numbersKey = normalizedNumbers.join(",");
+
+    const existing = await GridContent.findOne({
+      gridType,
+      type,
+      numbersKey
+    }).lean();
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Entry for this gridType + type + numbers combination already exists"
+      });
+    }
 
     const doc = await GridContent.create({
       gridType,
       type,
-      numbers,
+      numbers: normalizedNumbers,
       englishContent,
       hindiContent
     });
@@ -92,11 +123,33 @@ export const updateGridContent = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid input" });
     }
     if (!ensureMinNumbers(numbers, res)) return;
+    if (!Array.isArray(numbers)) {
+      return res.status(400).json({ success: false, message: "numbers must be an array" });
+    }
+
+    const normalizedNumbers = normalizeNumbers(numbers);
+    console.log("Incoming numbers:", numbers);
+    console.log("Normalized:", normalizedNumbers);
+    const numbersKey = normalizedNumbers.join(",");
+
+    const existing = await GridContent.findOne({
+      _id: { $ne: id },
+      gridType,
+      type,
+      numbersKey
+    }).lean();
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Entry for this gridType + type + numbers combination already exists"
+      });
+    }
 
     const update = {};
     if (gridType != null) update.gridType = gridType;
     if (type != null) update.type = type;
-    if (numbers != null) update.numbers = numbers;
+    if (numbers != null) update.numbers = normalizedNumbers;
     if (englishContent != null) update.englishContent = englishContent;
     if (hindiContent != null) update.hindiContent = hindiContent;
 

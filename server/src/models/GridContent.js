@@ -25,6 +25,10 @@ const gridContentSchema = new mongoose.Schema(
       enum: ["present", "missing"],
       index: true
     },
+    numbersKey: {
+      type: String,
+      required: true
+    },
     englishContent: {
       type: String,
       default: ""
@@ -50,9 +54,11 @@ gridContentSchema.pre("validate", function () {
   // Canonicalize combination so uniqueness works predictably.
   // eslint-disable-next-line no-invalid-this
   this.numbers = normalizeNumbers(this.numbers);
+  // eslint-disable-next-line no-invalid-this
+  this.numbersKey = this.numbers.join(",");
 });
 
-gridContentSchema.index({ gridType: 1, type: 1, numbers: 1 }, { unique: true });
+gridContentSchema.index({ gridType: 1, type: 1, numbersKey: 1 }, { unique: true });
 
 const GridContent = mongoose.model("GridContent", gridContentSchema);
 
