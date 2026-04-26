@@ -46,11 +46,10 @@ function normalizeNumbers(values) {
   return uniq;
 }
 
-gridContentSchema.pre("validate", function (next) {
+gridContentSchema.pre("validate", function () {
   // Canonicalize combination so uniqueness works predictably.
   // eslint-disable-next-line no-invalid-this
   this.numbers = normalizeNumbers(this.numbers);
-  next();
 });
 
 gridContentSchema.index({ gridType: 1, type: 1, numbers: 1 }, { unique: true });
