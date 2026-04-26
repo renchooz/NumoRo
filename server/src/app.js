@@ -4,6 +4,7 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import numerologyRoutes from "./routes/numerologyRoutes.js";
+import adminGridContentRoutes from "./routes/adminGridContentRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 
 dotenv.config({ path: ".env", override: true });
@@ -52,6 +53,7 @@ app.get("/api/v1/health", (_req, res) => {
 });
 
 app.use("/api/v1/numerology", numerologyRoutes);
+app.use("/api/v1/admin", adminGridContentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

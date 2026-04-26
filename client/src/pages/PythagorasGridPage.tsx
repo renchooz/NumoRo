@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link, Navigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 import GridCard from "../components/GridCard";
+import GridInterpretations from "../components/GridInterpretations";
 import { useTheme } from "../hooks/useTheme";
 import { useDob } from "../state/DobContext";
 import { useLoader } from "../state/LoaderContext";
@@ -61,6 +62,8 @@ export default function PythagorasGridPage() {
             accent="indigo"
           />
         </motion.div>
+
+        <GridInterpretations gridType="pythagoras" presentNumbers={grid.present} />
       </div>
     </main>
   );

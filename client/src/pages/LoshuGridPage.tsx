@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import ThemeToggle from "../components/ThemeToggle";
 import GridCard from "../components/GridCard";
+import GridInterpretations from "../components/GridInterpretations";
 import { useTheme } from "../hooks/useTheme";
 import { useDob } from "../state/DobContext";
 import { useLoader } from "../state/LoaderContext";
@@ -61,6 +62,8 @@ export default function LoshuGridPage() {
             accent="emerald"
           />
         </motion.div>
+
+        <GridInterpretations gridType="loshu" presentNumbers={grid.present} />
       </div>
     </main>
   );
