@@ -63,7 +63,11 @@ export default function PythagorasGridPage() {
           />
         </motion.div>
 
-        <GridInterpretations gridType="pythagoras" presentNumbers={grid.present} />
+        <GridInterpretations
+          gridType="pythagoras"
+          presentNumbers={grid.present}
+          missingNumbers={grid.missing}
+        />
       </div>
     </main>
   );

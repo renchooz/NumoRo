@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { NumerologyRequest, NumerologyResponse } from "../types/numerology";
-import type { GridContent, GridType } from "../types/gridContent";
+import type { GridContent, GridContentType, GridType } from "../types/gridContent";
 import { getAdminToken } from "../utils/adminAuth";
 
 const api = axios.create({
@@ -29,7 +29,8 @@ export const fetchGridContentAll = async () => {
 
 export const createGridContent = async (payload: {
   gridType: GridType;
-  number: number;
+  type: GridContentType;
+  numbers: number[];
   englishContent: string;
   hindiContent: string;
 }) => {
@@ -43,7 +44,8 @@ export const updateGridContent = async (
   id: string,
   payload: {
     gridType: GridType;
-    number: number;
+    type: GridContentType;
+    numbers: number[];
     englishContent: string;
     hindiContent: string;
   }

@@ -30,12 +30,20 @@ function getErrorMessage(err: unknown, fallback: string) {
   return fallback;
 }
 
+function getEntryNumbers(entry: GridContent): number[] {
+  if (Array.isArray(entry.numbers) && entry.numbers.length > 0) return entry.numbers;
+  if (typeof entry.number === "number" && Number.isInteger(entry.number)) return [entry.number];
+  return [];
+}
+
 export default function GridInterpretations({
   gridType,
-  presentNumbers
+  presentNumbers,
+  missingNumbers
 }: {
   gridType: GridType;
   presentNumbers: number[];
+  missingNumbers: number[];
 }) {
   const [lang, setLang] = useState<Lang>(() => loadLang());
   const [all, setAll] = useState<GridContent[] | null>(null);
@@ -57,12 +65,36 @@ export default function GridInterpretations({
     };
   }, []);
 
-  const filtered = useMemo(() => {
-    const presentSet = new Set(presentNumbers);
-    return (all ?? [])
-      .filter((d) => d.gridType === gridType && presentSet.has(d.number))
-      .sort((a, b) => a.number - b.number);
-  }, [all, gridType, presentNumbers]);
+  const { presentMatches, missingMatches } = useMemo(() => {
+    const pSet = new Set(presentNumbers);
+    const mSet = new Set(missingNumbers);
+
+    const relevant = (all ?? []).filter((d) => d.gridType === gridType);
+
+    const presentMatches = relevant
+      .filter((d) => {
+        const nums = getEntryNumbers(d);
+        return (d.type ?? "present") === "present" && nums.length > 0 && nums.every((n) => pSet.has(n));
+      })
+      .sort((a, b) => {
+        const an = getEntryNumbers(a);
+        const bn = getEntryNumbers(b);
+        return an.length - bn.length || an.join(",").localeCompare(bn.join(","));
+      });
+
+    const missingMatches = relevant
+      .filter((d) => {
+        const nums = getEntryNumbers(d);
+        return (d.type ?? "present") === "missing" && nums.length > 0 && nums.every((n) => mSet.has(n));
+      })
+      .sort((a, b) => {
+        const an = getEntryNumbers(a);
+        const bn = getEntryNumbers(b);
+        return an.length - bn.length || an.join(",").localeCompare(bn.join(","));
+      });
+
+    return { presentMatches, missingMatches };
+  }, [all, gridType, missingNumbers, presentNumbers]);
 
   return (
     <section className="mt-6">
@@ -114,38 +146,88 @@ export default function GridInterpretations({
         </div>
       ) : null}
 
-      {all && filtered.length === 0 ? (
+      {all && presentMatches.length === 0 && missingMatches.length === 0 ? (
         <div className="rounded-2xl border border-white/40 bg-white/35 px-4 py-3 text-sm text-slate-600 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 dark:text-slate-300">
-          No interpretation entries found for these present numbers yet.
+          No matching insights found yet.
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {filtered.map((item) => (
-          <article
-            key={item._id}
-            className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-5 shadow-glass backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/40"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-fuchsia-500/10 to-cyan-500/15" />
-            <div className="relative">
-              <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  Number {item.number}
-                </h4>
-                <span className="rounded-xl border border-white/30 bg-white/40 px-3 py-1 text-xs font-semibold text-slate-700 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-200">
-                  {item.gridType}
-                </span>
-              </div>
-
-              <div
-                className="rich-content text-sm text-slate-700 dark:text-slate-200"
-                dangerouslySetInnerHTML={{
-                  __html: lang === "en" ? item.englishContent || "" : item.hindiContent || ""
-                }}
-              />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div>
+          <h4 className="mb-3 text-base font-extrabold text-emerald-700 dark:text-emerald-300">
+            Present Insights
+          </h4>
+          {all && presentMatches.length === 0 ? (
+            <div className="rounded-2xl border border-white/40 bg-white/35 px-4 py-3 text-sm text-slate-600 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 dark:text-slate-300">
+              No matching present insights.
             </div>
-          </article>
-        ))}
+          ) : null}
+          <div className="grid gap-4">
+            {presentMatches.map((item) => (
+              <article
+                key={item._id}
+                className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-5 shadow-glass backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/40"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-cyan-500/10 to-indigo-500/15" />
+                <div className="relative">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h5 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                      Combination: {getEntryNumbers(item).join(",")}
+                    </h5>
+                    <span className="rounded-xl border border-white/30 bg-white/40 px-3 py-1 text-xs font-semibold text-slate-700 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-200">
+                      {item.gridType}
+                    </span>
+                  </div>
+
+                  <div
+                    className="rich-content text-sm text-slate-700 dark:text-slate-200"
+                    dangerouslySetInnerHTML={{
+                      __html: lang === "en" ? item.englishContent || "" : item.hindiContent || ""
+                    }}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h4 className="mb-3 text-base font-extrabold text-rose-700 dark:text-rose-300">
+            Missing Insights
+          </h4>
+          {all && missingMatches.length === 0 ? (
+            <div className="rounded-2xl border border-white/40 bg-white/35 px-4 py-3 text-sm text-slate-600 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 dark:text-slate-300">
+              No matching missing insights.
+            </div>
+          ) : null}
+          <div className="grid gap-4">
+            {missingMatches.map((item) => (
+              <article
+                key={item._id}
+                className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-5 shadow-glass backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/40"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/15 via-fuchsia-500/10 to-indigo-500/15" />
+                <div className="relative">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h5 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                      Combination: {getEntryNumbers(item).join(",")}
+                    </h5>
+                    <span className="rounded-xl border border-white/30 bg-white/40 px-3 py-1 text-xs font-semibold text-slate-700 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-200">
+                      {item.gridType}
+                    </span>
+                  </div>
+
+                  <div
+                    className="rich-content text-sm text-slate-700 dark:text-slate-200"
+                    dangerouslySetInnerHTML={{
+                      __html: lang === "en" ? item.englishContent || "" : item.hindiContent || ""
+                    }}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

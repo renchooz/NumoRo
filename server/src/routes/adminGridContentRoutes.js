@@ -16,10 +16,38 @@ const gridTypeValidator = body("gridType")
   .isIn(["loshu", "pythagoras", "vedic"])
   .withMessage("gridType must be one of: loshu, pythagoras, vedic");
 
-const numberValidator = body("number")
-  .isInt({ min: 1, max: 9 })
-  .withMessage("number must be between 1 and 9")
-  .toInt();
+const typeValidator = body("type")
+  .isIn(["present", "missing"])
+  .withMessage("type must be one of: present, missing");
+
+const numbersValidator = body("numbers")
+  .isArray({ min: 2 })
+  .withMessage("Minimum 2 numbers required")
+  .bail()
+  .custom((arr) => {
+    if (!Array.isArray(arr)) {
+      throw new Error("Minimum 2 numbers required");
+    }
+    const nums = arr.map((n) => Number(n));
+    const ok = nums.every((n) => Number.isInteger(n) && n >= 1 && n <= 9);
+    if (!ok) {
+      throw new Error("numbers must contain integers between 1 and 9");
+    }
+    const uniq = new Set(nums);
+    if (uniq.size !== nums.length) {
+      throw new Error("numbers must not contain duplicates");
+    }
+    if (uniq.size < 2) {
+      throw new Error("Minimum 2 numbers required");
+    }
+    return true;
+  })
+  .customSanitizer((arr) => {
+    const nums = arr.map((n) => Number(n));
+    const uniq = Array.from(new Set(nums));
+    uniq.sort((a, b) => a - b);
+    return uniq;
+  });
 
 const htmlValidator = (field) =>
   body(field).optional({ values: "falsy" }).isString().withMessage(`${field} must be string`);
@@ -34,7 +62,14 @@ router.get(
 router.post(
   "/grid-content",
   requireAdmin,
-  [gridTypeValidator, numberValidator, htmlValidator("englishContent"), htmlValidator("hindiContent"), validateRequest],
+  [
+    gridTypeValidator,
+    typeValidator,
+    numbersValidator,
+    htmlValidator("englishContent"),
+    htmlValidator("hindiContent"),
+    validateRequest
+  ],
   createGridContent
 );
 
@@ -44,7 +79,8 @@ router.put(
   [
     param("id").isMongoId().withMessage("Invalid id"),
     gridTypeValidator,
-    numberValidator,
+    typeValidator,
+    numbersValidator,
     htmlValidator("englishContent"),
     htmlValidator("hindiContent"),
     validateRequest

@@ -63,7 +63,7 @@ export default function LoshuGridPage() {
           />
         </motion.div>
 
-        <GridInterpretations gridType="loshu" presentNumbers={grid.present} />
+        <GridInterpretations gridType="loshu" presentNumbers={grid.present} missingNumbers={grid.missing} />
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminLogout } from "../utils/adminAuth";
-import type { GridContent, GridType } from "../types/gridContent";
+import type { GridContent, GridContentType, GridType } from "../types/gridContent";
 import {
   createGridContent,
   deleteGridContent,
@@ -19,18 +19,51 @@ function getErrorMessage(err: unknown, fallback: string) {
   return fallback;
 }
 
+function normalizeEntryNumbers(entry: GridContent): number[] {
+  if (Array.isArray(entry.numbers) && entry.numbers.length > 0) {
+    return entry.numbers;
+  }
+  if (typeof entry.number === "number" && Number.isInteger(entry.number)) {
+    return [entry.number];
+  }
+  return [];
+}
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [entries, setEntries] = useState<GridContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [filterGridType, setFilterGridType] = useState<GridType | "all">("all");
+  const [filterType, setFilterType] = useState<GridContentType | "all">("all");
+  const [numbersQuery, setNumbersQuery] = useState<string>("");
+  const [sort, setSort] = useState<"updatedDesc" | "createdDesc" | "createdAsc">("updatedDesc");
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [gridType, setGridType] = useState<GridType>("loshu");
-  const [number, setNumber] = useState<number>(1);
+  const [type, setType] = useState<GridContentType>("present");
+  const [numbersInput, setNumbersInput] = useState<string>("1,3,6");
+  const [numbers, setNumbers] = useState<number[]>([1, 3, 6]);
   const [englishContent, setEnglishContent] = useState<string>("");
   const [hindiContent, setHindiContent] = useState<string>("");
   const [saving, setSaving] = useState(false);
+
+  const parseNumbers = (input: string): { ok: true; value: number[] } | { ok: false; message: string } => {
+    const raw = input
+      .split(/[,\s]+/g)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const parsed = raw.map((t) => Number(t)).filter((n) => Number.isInteger(n));
+    if (parsed.length === 0) return { ok: false, message: "At least 2 numbers are required" };
+    const invalid = parsed.find((n) => n < 1 || n > 9);
+    if (invalid != null) return { ok: false, message: "Numbers must be between 1 and 9." };
+    const uniq = Array.from(new Set(parsed));
+    if (uniq.length !== parsed.length) return { ok: false, message: "Remove duplicates from numbers." };
+    if (uniq.length < 2) return { ok: false, message: "At least 2 numbers are required" };
+    uniq.sort((a, b) => a - b);
+    return { ok: true, value: uniq };
+  };
 
   useEffect(() => {
     document.title = "Numo Admin";
@@ -71,10 +104,38 @@ export default function AdminPage() {
   const isEditing = Boolean(editingId);
   const title = useMemo(() => (isEditing ? "Update Entry" : "Create Entry"), [isEditing]);
 
+  const filteredEntries = useMemo(() => {
+    const q = numbersQuery.trim();
+    const want = q ? parseNumbers(q) : null;
+    const wantSet = want && want.ok ? new Set(want.value) : null;
+
+    const base = entries.filter((e) => {
+      const entryNumbers = normalizeEntryNumbers(e);
+      const entryType = e.type ?? "present";
+      if (filterGridType !== "all" && e.gridType !== filterGridType) return false;
+      if (filterType !== "all" && entryType !== filterType) return false;
+      if (wantSet) {
+        // match any overlap with query numbers, e.g. "1,3"
+        if (!entryNumbers.some((n) => wantSet.has(n))) return false;
+      }
+      return true;
+    });
+
+    const key = sort;
+    base.sort((a, b) => {
+      if (key === "updatedDesc") return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      if (key === "createdAsc") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    return base;
+  }, [entries, filterGridType, filterType, numbersQuery, sort]);
+
   const resetForm = () => {
     setEditingId(null);
     setGridType("loshu");
-    setNumber(1);
+    setType("present");
+    setNumbersInput("1,3,6");
+    setNumbers([1, 3, 6]);
     setEnglishContent("");
     setHindiContent("");
     setError(null);
@@ -128,13 +189,31 @@ export default function AdminPage() {
               className="space-y-4"
               onSubmit={async (e) => {
                 e.preventDefault();
+                const parsed = parseNumbers(numbersInput);
+                if (!parsed.ok) {
+                  setError(parsed.message);
+                  return;
+                }
+                setNumbers(parsed.value);
                 setSaving(true);
                 setError(null);
                 try {
                   if (editingId) {
-                    await updateGridContent(editingId, { gridType, number, englishContent, hindiContent });
+                    await updateGridContent(editingId, {
+                      gridType,
+                      type,
+                      numbers: parsed.value,
+                      englishContent,
+                      hindiContent
+                    });
                   } else {
-                    await createGridContent({ gridType, number, englishContent, hindiContent });
+                    await createGridContent({
+                      gridType,
+                      type,
+                      numbers: parsed.value,
+                      englishContent,
+                      hindiContent
+                    });
                   }
                   await refresh();
                   resetForm();
@@ -160,18 +239,41 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Number</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Type</label>
                   <select
-                    value={number}
-                    onChange={(e) => setNumber(Number(e.target.value))}
+                    value={type}
+                    onChange={(e) => setType(e.target.value as GridContentType)}
                     className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-4 py-3 text-slate-900 shadow-glass outline-none backdrop-blur-xl focus:border-indigo-400 dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
+                    <option value="present">Present Numbers</option>
+                    <option value="missing">Missing Numbers</option>
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Numbers (comma separated)
+                </label>
+                <input
+                  value={numbersInput}
+                  onChange={(e) => {
+                    setNumbersInput(e.target.value);
+                    const parsed = parseNumbers(e.target.value);
+                    if (parsed.ok) setNumbers(parsed.value);
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-4 py-3 text-slate-900 shadow-glass outline-none backdrop-blur-xl placeholder:text-slate-500 focus:border-indigo-400 dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                  placeholder="1,3,6,7"
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {numbers.map((n) => (
+                    <span
+                      key={n}
+                      className="rounded-full border border-white/30 bg-white/40 px-3 py-1 text-xs font-semibold text-slate-700 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/30 dark:text-slate-200"
+                    >
+                      {n}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -233,7 +335,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">All Entries</h2>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  Edit to prefill the form, or delete.
+                  Filter, search, edit, or delete.
                 </p>
               </div>
               <button
@@ -245,13 +347,62 @@ export default function AdminPage() {
               </button>
             </div>
 
+            <div className="mb-4 grid gap-3 md:grid-cols-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Grid Type</label>
+                <select
+                  value={filterGridType}
+                  onChange={(e) => setFilterGridType(e.target.value as GridType | "all")}
+                  className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-3 py-2 text-sm shadow-glass outline-none backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                >
+                  <option value="all">All</option>
+                  <option value="loshu">Lo Shu</option>
+                  <option value="pythagoras">Pythagoras</option>
+                  <option value="vedic">Vedic</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Type</label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as GridContentType | "all")}
+                  className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-3 py-2 text-sm shadow-glass outline-none backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                >
+                  <option value="all">All</option>
+                  <option value="present">Present</option>
+                  <option value="missing">Missing</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Search numbers</label>
+                <input
+                  value={numbersQuery}
+                  onChange={(e) => setNumbersQuery(e.target.value)}
+                  placeholder="e.g. 1,3"
+                  className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-3 py-2 text-sm shadow-glass outline-none backdrop-blur-xl placeholder:text-slate-500 dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Sort</label>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  className="mt-2 w-full rounded-2xl border border-white/40 bg-white/40 px-3 py-2 text-sm shadow-glass outline-none backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                >
+                  <option value="updatedDesc">Updated (newest)</option>
+                  <option value="createdDesc">Created (newest)</option>
+                  <option value="createdAsc">Created (oldest)</option>
+                </select>
+              </div>
+            </div>
+
             {loading ? (
               <div className="text-sm text-slate-600 dark:text-slate-300">Loading…</div>
-            ) : entries.length === 0 ? (
+            ) : filteredEntries.length === 0 ? (
               <div className="text-sm text-slate-600 dark:text-slate-300">No entries yet.</div>
             ) : (
               <div className="space-y-3">
-                {entries.map((e) => (
+                {filteredEntries.map((e) => (
                   <article
                     key={e._id}
                     className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-glass backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/30"
@@ -259,7 +410,7 @@ export default function AdminPage() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                          {e.gridType} • {e.number}
+                          {e.gridType} • {e.type ?? "present"} • {normalizeEntryNumbers(e).join(",") || "-"}
                         </p>
                         <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                           Updated: {new Date(e.updatedAt).toLocaleString()}
@@ -272,7 +423,10 @@ export default function AdminPage() {
                           onClick={() => {
                             setEditingId(e._id);
                             setGridType(e.gridType);
-                            setNumber(e.number);
+                            setType(e.type ?? "present");
+                            const entryNumbers = normalizeEntryNumbers(e);
+                            setNumbersInput(entryNumbers.join(","));
+                            setNumbers(entryNumbers.length > 0 ? entryNumbers : [1]);
                             setEnglishContent(e.englishContent || "");
                             setHindiContent(e.hindiContent || "");
                             setError(null);
@@ -286,6 +440,8 @@ export default function AdminPage() {
                           type="button"
                           onClick={async () => {
                             setError(null);
+                            const ok = window.confirm("Delete this entry permanently?");
+                            if (!ok) return;
                             try {
                               await deleteGridContent(e._id);
                               await refresh();

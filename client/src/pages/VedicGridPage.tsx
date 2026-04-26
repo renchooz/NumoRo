@@ -63,7 +63,7 @@ export default function VedicGridPage() {
           />
         </motion.div>
 
-        <GridInterpretations gridType="vedic" presentNumbers={grid.present} />
+        <GridInterpretations gridType="vedic" presentNumbers={grid.present} missingNumbers={grid.missing} />
       </div>
     </main>
   );

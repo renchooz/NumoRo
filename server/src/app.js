@@ -1,13 +1,11 @@
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import numerologyRoutes from "./routes/numerologyRoutes.js";
 import adminGridContentRoutes from "./routes/adminGridContentRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
-
-dotenv.config({ path: ".env", override: true });
+import "./config/loadEnv.js";
 
 const app = express();
 const normalizeOrigin = (value) => value?.trim().replace(/\/$/, "");
