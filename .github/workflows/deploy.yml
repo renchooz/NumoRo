@@ -23,7 +23,7 @@ jobs:
         with:
           context: ./server
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/namo-server:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/namo-server:latest
 
       - name: build and push client
         uses: docker/build-push-action@v5
@@ -32,5 +32,5 @@ jobs:
           push: true
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/namo-client:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/namo-client:latest
        
