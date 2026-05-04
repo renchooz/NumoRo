@@ -83,9 +83,18 @@ function getDobDigitsByKind(dob: string, kind: GridKind): number[] {
   return getFullDobDigits(dob);
 }
 
+export function shouldIgnorePmInGrid(dob: string): boolean {
+  const day = Number.parseInt(dob.split("-")[0] ?? "", 10);
+  if (!Number.isFinite(day)) return false;
+
+  const ignorePM = (day >= 1 && day <= 9) || day === 10 || day === 20 || day === 30;
+  return ignorePM;
+}
+
 export function getDigitFrequency(dob: string, pm: number, dn: number, kind: GridKind) {
   const dobDigits = getDobDigitsByKind(dob, kind).filter((d) => d >= 1 && d <= 9);
-  const injected = [...toDigitList(pm), ...toDigitList(dn)];
+  const ignorePM = shouldIgnorePmInGrid(dob);
+  const injected = ignorePM ? [...toDigitList(dn)] : [...toDigitList(pm), ...toDigitList(dn)];
   const digits = [...dobDigits, ...injected] as Array<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>;
 
   const frequency = createEmptyFrequency();
