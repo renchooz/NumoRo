@@ -49,7 +49,10 @@ export default function VedicGridPage() {
     return getPersonalYearSequence(birthYear, pm);
   }, [birthYear, pm]);
   const cycleSequence = useMemo(() => (pm == null ? [] : generateCycle(pm)), [pm]);
-  const dobParts = useMemo(() => dob.match(/^\s*(\d{1,2})\D+(\d{1,2})\D+(\d{2}|\d{4})\s*$/), [dob]);
+  const dobParts = useMemo(
+    () => (dob ? dob.match(/^\s*(\d{1,2})\D+(\d{1,2})\D+(\d{2}|\d{4})\s*$/) : null),
+    [dob]
+  );
 
   if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
