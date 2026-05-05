@@ -2,7 +2,7 @@
 
 A premium full-stack numerology web app built for real client delivery and portfolio showcase.
 
-## Tech Stack
+## Tech Stacks
 
 - **Frontend:** React + Vite + TypeScript + Tailwind CSS + Framer Motion
 - **Backend:** Node.js + Express (MVC architecture)
