@@ -22,6 +22,10 @@ const planetMap: Record<number, string> = {
   9: "Mars"
 };
 
+function formatDate(day: number, month: number, year: number): string {
+  return `${day}/${month}/${year}`;
+}
+
 export default function VedicGridPage() {
   const { isDark, setIsDark } = useTheme();
   const { dob, pm, dn } = useDob();
@@ -45,6 +49,7 @@ export default function VedicGridPage() {
     return getPersonalYearSequence(birthYear, pm);
   }, [birthYear, pm]);
   const cycleSequence = useMemo(() => (pm == null ? [] : generateCycle(pm)), [pm]);
+  const dobParts = useMemo(() => dob.match(/^\s*(\d{1,2})\D+(\d{1,2})\D+(\d{2}|\d{4})\s*$/), [dob]);
 
   if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
@@ -123,6 +128,13 @@ export default function VedicGridPage() {
                         const startYear = index === 0 ? birthYear : personalYearSequence[index - 1];
                         const sequenceNumber = cycleSequence[index];
                         const planetName = sequenceNumber ? planetMap[sequenceNumber] : "Unknown";
+                        const day = dobParts ? Number.parseInt(dobParts[1], 10) : NaN;
+                        const month = dobParts ? Number.parseInt(dobParts[2], 10) : NaN;
+                        const hasValidDateParts = Number.isFinite(day) && Number.isFinite(month);
+                        const startLabel = hasValidDateParts
+                          ? formatDate(day, month, startYear)
+                          : String(startYear);
+                        const endLabel = hasValidDateParts ? formatDate(day, month, yearValue) : String(yearValue);
 
                         return (
                         <div
@@ -130,7 +142,7 @@ export default function VedicGridPage() {
                           className="rounded-lg border border-fuchsia-200/70 bg-fuchsia-50/70 px-3 py-2 text-sm font-medium text-fuchsia-800 dark:border-fuchsia-800/60 dark:bg-fuchsia-900/20 dark:text-fuchsia-200"
                         >
                           <span className="text-fuchsia-900 dark:text-fuchsia-100">
-                            {startYear} - {yearValue}
+                            {startLabel} - {endLabel}
                           </span>
                           {" = "}
                           <span className="font-extrabold">{planetName}</span>
