@@ -8,7 +8,19 @@ import { useTheme } from "../hooks/useTheme";
 import { useDob } from "../state/DobContext";
 import { useLoader } from "../state/LoaderContext";
 import { calculateGrid } from "../utils/calculateGrid";
-import { getBirthYearFromDob, getPersonalYearSequence } from "../utils/personalYear";
+import { generateCycle, getBirthYearFromDob, getPersonalYearSequence } from "../utils/personalYear";
+
+const planetMap: Record<number, string> = {
+  1: "Sun",
+  2: "Moon",
+  3: "Jupiter",
+  4: "Rahu",
+  5: "Mercury",
+  6: "Venus",
+  7: "Ketu",
+  8: "Shani",
+  9: "Mars"
+};
 
 export default function VedicGridPage() {
   const { isDark, setIsDark } = useTheme();
@@ -32,6 +44,7 @@ export default function VedicGridPage() {
     if (birthYear == null || pm == null) return [];
     return getPersonalYearSequence(birthYear, pm);
   }, [birthYear, pm]);
+  const cycleSequence = useMemo(() => (pm == null ? [] : generateCycle(pm)), [pm]);
 
   if (!dob || pm == null || dn == null || !grid) {
     return <Navigate to="/" replace />;
@@ -103,17 +116,27 @@ export default function VedicGridPage() {
                 ) : (
                   <>
                     <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
-                      Starting point: {birthYear} + {pm} = {birthYear + pm}
+                      Personal Year Cycle
                     </p>
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                      {personalYearSequence.map((yearValue, index) => (
+                      {personalYearSequence.map((yearValue, index) => {
+                        const startYear = index === 0 ? birthYear : personalYearSequence[index - 1];
+                        const sequenceNumber = cycleSequence[index];
+                        const planetName = sequenceNumber ? planetMap[sequenceNumber] : "Unknown";
+
+                        return (
                         <div
                           key={`${yearValue}-${index}`}
                           className="rounded-lg border border-fuchsia-200/70 bg-fuchsia-50/70 px-3 py-2 text-sm font-medium text-fuchsia-800 dark:border-fuchsia-800/60 dark:bg-fuchsia-900/20 dark:text-fuchsia-200"
                         >
-                          Year {index + 1}: {yearValue}
+                          <span className="text-fuchsia-900 dark:text-fuchsia-100">
+                            {startYear} - {yearValue}
+                          </span>
+                          {" = "}
+                          <span className="font-extrabold">{planetName}</span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </>
                 )}
